@@ -1,35 +1,45 @@
 import os
-basedir = os.path.abspath(os.path.dirname(__file__))
+class Config:
+    '''
+    General configuration parent class
+    '''
 
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://AbbyShabi:dammy@localhost/pitch'
 
-class Config(object):
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'app.db')
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = ['your-email@example.com']
-    POSTS_PER_PAGE = 25
+    UPLOADED_PHOTOS_DEST ='app/static/photos'
+    #  email configurations
+    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+
 
 class ProdConfig(Config):
     '''
-    Docstring goes here
+    Production  configuration child class
+
+    Args:
+        Config: The parent configuration class with General configuration settings
     '''
-    pass
+    #SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+
+class TestConfig(Config):
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://ron:3159@localhost/pitch_test'
 
 class DevConfig(Config):
     '''
-    Docstring goes here
-    '''
-    pass
+    Development  configuration child class
 
+    Args:
+        Config: The parent configuration class with General configuration settings
+    '''
+
+    DEBUG = True
 
 config_options = {
-    'development':DevConfig,
-    'production':ProdConfig
-    
+'development':DevConfig,
+'production':ProdConfig,
+'test':TestConfig
 }

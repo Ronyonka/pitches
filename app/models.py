@@ -1,92 +1,88 @@
-
-from datetime import datetime
-from hashlib import md5
-from app import db, login
+from . import db
+from werkzeug.security import generate_password_hash,check_password_hash
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+from . import login_manager
+from datetime import datetime
 
-followers = db.Table(
-    'followers',
-    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
-)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True)
-    email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
-    about_me = db.Column(db.String(140))
-    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
-    followed = db.relationship(
-        'User', secondary = followers,
-        primaryjoin=(followers.c.follower_id == id),
-        secondaryjoin=(followers.c.followed_id == id),
-        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+class User(UserMixin,db.Model):
+    __tablename__ = 'users'
 
-    def __repr__(self):
-        return '<User {}>'.format(self.username)   
+    id = db.Column(db.Integer,primary_key = True)
+    username = db.Column(db.String(255),index = True)
+    email = db.Column(db.String(255),unique = True,index = True)
+    role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
+    bio = db.Column(db.String(255))
+    profile_pic_path = db.Column(db.String())
+    password_hash = db.Column(db.String(255))
 
-    def set_password(self, password):
+    @property
+    def password(self):
+        raise AttributeError('You cannnot read the password attribute')
+
+    @password.setter
+    def password(self, password):
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password) 
 
-    def avatar(self, size):
-        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
-        return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
-
-    def follow(self, user):
-        if not self.is_following(user):
-            self.followed.append(user)
-
-    def unfollow(self, user):
-        if self.is_following(user):
-            self.followed.remove(user)
-
-    def is_following(self, user):
-        return self.followed.filter(
-            followers.c.followed_id == user.id).count() > 0
-
-    def followed_posts(self):
-        followed = Post.query.join(
-            followers, (followers.c.followed_id == Post.user_id)).filter(
-                followers.c.follower_id == self.id)
-        own = Post.query.filter_by(user_id=self.id)
-        return followed.union(own).order_by(Post.timestamp.desc())
-
-    @login.user_loader
-    def load_user(id):
-        return User.query.get(int(id))
-
-
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    def verify_password(self,password) :
+        return check_password_hash(self.password_hash,password)
 
     def __repr__(self):
-        return '<Post {}>'.format(self.body)
+        return f'User {self.username}'
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer,primary_key = True)
+    name = db.Column(db.String(255))
+    users = db.relationship('User',backref = 'role',lazy="dynamic")
+
+
+    def __repr__(self):
+        return f'User {self.name}'
+
+class Post(db.Model):
+
+    __tablename__ = 'posts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.Text)
+    body = db.Column(db.Text)
+    date = db.Column(db.String)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    category = db.Column(db.String)
+    comments = db.relationship("Comment", backref = "post", lazy = "dynamic")
 
     def save_post(self):
+        '''
+        Function to save a new pitch
+        '''
         db.session.add(self)
         db.session.commit()
 
-# class Comments(db.Model):
-#    '''
-#    Creates table to hold comments on pitches
-#    '''
-#    id = db.Column(db.Integer, primary_key=True)
-#    comment = db.Column(db.String(140))
-#    time_posted = db.Column(db.String, nullable=False, default=datetime.utcnow)
-#    pitch_id = db.Column(db.Integer, db.ForeignKey('pitch.id'), nullable=False)
-#    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    def get_post_comments(self):
+        post = Post.query.filter_by(id = self.id).first()
+        comments = Comment.query.filter_by(id = post.id)
+        return comments
 
-#    def __repr__(self):
-#       return f"Comments('{self.comment}', '{self.time_posted}', '{self.pitch_id}', '{self.user_id}')"
+class Comment(db.Model):
+     
+    __tablename__ = 'comments'
 
-#    def save_comment(self):
-#       db.session.add(self)
-#       db.session.commit()
+    id = db.Column(db.Integer, primary_key = True)
+    body = db.column(db.Text)
+    author = db.column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    pitch_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
+
+
+    def save_comment(self):
+        db.session.add(self)
+        db.session.commit()   
+        
+    

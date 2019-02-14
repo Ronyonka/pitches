@@ -1,100 +1,121 @@
-from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request
-from flask_login import current_user, login_required
-from werkzeug.urls import url_parse
+from flask import render_template, request, redirect, url_for, abort
 from . import main
-from .. import db
-from .forms import EditProfileForm,PostForm
-from app.models import User,Post
-
-
-@main.before_request
-def before_request():
-    if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
-        db.session.commit()
+from ..models import User, Post,Comment
+from .forms import PostForm,CommentForm,UpdateProfile
+from .. import db,photos
+from flask_login import login_user, logout_user, login_required, current_user
+import datetime
 
 
 @main.route('/')
-@main.route('/index')
-@login_required
 def index():
+    """View root page function that returns index page and the various news sources"""
+
+    title = 'Home- Welcome to Pitches'
     form = PostForm()
-    if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
-        db.session.add(post)
-        db.session.commit()
-        flash('Your post is now live!')
-        return redirect(url_for('index'))
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    posts = current_user.followed_posts().all()
-    return render_template("index.html", title='Home Page', form=form, posts=posts)
+    return render_template('index.html', form=form)
 
+@main.route('/user/<uname>')
+def profile(uname):
+    user = User.query.filter_by(username = uname).first()
 
-@main.route('/user/<username>')
-@login_required
-def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
-
-
-@main.route('/edit_profile', methods=['GET', 'POST'])
-@login_required
-def edit_profile():
-    form = EditProfileForm(current_user.username)
-    if form.validate_on_submit():
-        current_user.username = form.username.data
-        current_user.about_me = form.about_me.data
-        db.session.commit()
-        flash('Your changes have been saved.')
-        return redirect(url_for('edit_profile'))
-    elif request.method == 'GET':
-        form.username.data = current_user.username
-        form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html', title='Edit Profile',
-                           form=form)
-
-
-@main.route('/follow/<username>')
-@login_required
-def follow(username):
-    user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('User {} not found.'.format(username))
-        return redirect(url_for('index'))
-    if user == current_user:
-        flash('You cannot follow yourself!')
-        return redirect(url_for('user', username=username))
-    current_user.follow(user)
-    db.session.commit()
-    flash('You are following {}!'.format(username))
-    return redirect(url_for('user', username=username))
+        abort(404)
+
+    return render_template("profile/profile.html", user = user)
 
 
-@main.route('/unfollow/<username>')
+
+@main.route('/user/<uname>/update',methods = ['GET','POST'])
 @login_required
-def unfollow(username):
-    user = User.query.filter_by(username=username).first()
+def update_profile(uname):
+    user = User.query.filter_by(username = uname).first()
     if user is None:
-        flash('User {} not found.'.format(username))
-        return redirect(url_for('index'))
-    if user == current_user:
-        flash('You cannot unfollow yourself!')
-        return redirect(url_for('user', username=username))
-    current_user.unfollow(user)
-    db.session.commit()
-    flash('You are not following {}.'.format(username))
-    return redirect(url_for('user', username=username))
+        abort(404)
+
+    form = UpdateProfile()
+
+    if form.validate_on_submit():
+        user.bio = form.bio.data
+
+        db.session.add(user)
+        db.session.commit()
+
+        return redirect(url_for('.profile',uname=user.username))
+
+    return render_template('profile/update.html')
+
+@main.route('/user/<uname>/update/pic',methods= ['POST'])
+@login_required
+def update_pic(uname):
+    user = User.query.filter_by(username = uname).first()
+    if 'photo' in request.files:
+        filename = photos.save(request.files['photo'])
+        path = f'photos/{filename}'
+        user.profile_pic_path = path
+        db.session.commit()
+    return redirect(url_for('main.profile',uname=uname))
+
+
+@main.route('/post/<category>')
+def post(category):
+    
+    posts= None
+    if category == 'all':
+        posts = Post.query.order_by(Post.date.desc())
+    else :
+        posts = Post.query.filter_by(category = category).order_by(Post.date.desc()).all()
+
+    return render_template('post.html', posts = posts ,title = category.upper())
+
+@main.route('/new/post/<uname>', methods = ['GET','POST'])
+@login_required
+def new_post(uname):
+    form = PostForm()
+    title = 'Express yourself'
+    user = User.query.filter_by(username = uname).first()
+
+    if user is None:
+        abort(404)
+      
+    if form.validate_on_submit():
+        title = form.title.data
+        body = form.post.data
+        category = form.category.data 
+        dateNow = datetime.datetime.now()
+        date = str(dateNow)
+    
+
+        add_post = Post(title = title,body=body,category=category,date=date)
+        add_post.save_post()
+        posts = Post.query.all()
+        return redirect(url_for('main.post',category = category ))
+    return render_template('new_post.html', form = form, title =title)
+
+ 
+
+@main.route('/post/<post_id>/add/comment', methods = ['GET','POST'])
+@login_required
+def comment(uname,post_id):
+    user = User.query.filter_by(username = uname).first()
+    post = Post.query.filter_by(id = post_id).first()
+    form = CommentForm()
+
+    if form.validate_on_submit():
+        body = form.comment.data
+        name = form.name.data
+        new_comment = Comment(body=body)
+        new_comment.save_comment()
+        
+        return redirect(url_for("main.show_comments",id = id))
+    return render_template("comment.html", form = form, post = post)
+
+@main.route('/<post_id>/comments')
+@login_required
+def show_comments(post_id):
+    
+    comments = None
+    post = Post.query.filter_by(id = post_id).first()
+    comments = post.get_post_comments()
+
+    return render_template('show_comments.html',comments= comments,post= post)
