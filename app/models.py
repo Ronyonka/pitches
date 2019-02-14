@@ -69,3 +69,24 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+
+    def save_post(self):
+        db.session.add(self)
+        db.session.commit()
+
+# class Comments(db.Model):
+#    '''
+#    Creates table to hold comments on pitches
+#    '''
+#    id = db.Column(db.Integer, primary_key=True)
+#    comment = db.Column(db.String(140))
+#    time_posted = db.Column(db.String, nullable=False, default=datetime.utcnow)
+#    pitch_id = db.Column(db.Integer, db.ForeignKey('pitch.id'), nullable=False)
+#    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+#    def __repr__(self):
+#       return f"Comments('{self.comment}', '{self.time_posted}', '{self.pitch_id}', '{self.user_id}')"
+
+#    def save_comment(self):
+#       db.session.add(self)
+#       db.session.commit()
