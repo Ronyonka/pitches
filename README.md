@@ -1,6 +1,6 @@
 # Pitch
 
-#### This is a simple web application built with FlASK framework.
+#### This is a simple web application built with FLASK framework.
 
 #### By **Ron Onyonka**
 
