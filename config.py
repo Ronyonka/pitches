@@ -14,3 +14,22 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['your-email@example.com']
     POSTS_PER_PAGE = 25
+
+class ProdConfig(Config):
+    '''
+    Docstring goes here
+    '''
+    pass
+
+class DevConfig(Config):
+    '''
+    Docstring goes here
+    '''
+    pass
+
+
+config_options = {
+    'development':DevConfig,
+    'production':ProdConfig
+    
+}
