@@ -1,85 +1,46 @@
+
+{% extends 'base.html'%}
+
 {% block content %}
-<head>
-		<title>One Minute Pitch</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<!-- <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}"> -->
-	</head>
-	<body id="top">
-				<section id="banner" data-video="images/banner">
-					<div class="inner">
-						<header>
-							<h1>One Minute Pitch</h1>
-							<p>The only place where it is okay to be a one minute man</p>
-                        </header>
-                        <hr>
-            {% if current_user.is_authenticated %}
-            <h3> Welcome {{user.username| capitalize}}!</h3>
-            <div class="box">
-								<div class="inner">
-										<a href="/"class="button style3 fit">Home</a>
-								</div>
-							</div>
-					
-							<div class="box">
-									<div class="inner">
-										<a href="{{url_for('auth.logout')}}"  class="button style2 fit">Sign out</a>
-									</div>
-								</div>
-						{% else %}
-						<div class="box">
-								
-								<div class="inner">
-										<a href="{{url_for('auth.login')}}" class="button style2 fit">Sign in</a>
-								</div>
-							</div>
-                      {%endif%}
-                           
-                    </div>
-                </section>
-                <div class="box">
-							
-                    <div class="inner">
-                        <div class="col-md-4">
-                            {% if user.profile_pic_path %}
-                        
-                            <img src="{{url_for('static',filename=user.profile_pic_path)}}" alt="" class="img-thumbnail" style="height: 15%; width: 15%,">
-                        
-                            {%else%}
-                            <p>No profile picture</p>
-                        
-                            {% endif %}
-                        
-                                {% if user == current_user %}
-                            <form  action="{{url_for('main.update_pic',uname=user.username)}}" method="post" enctype = "multipart/form-data">
-                        
-                              <input type="file"  name="photo" class="form-control" required>
-                              <input type="submit">
-                            </form>
-                              {% endif %}
-                          </div>
-                    </div>
-                  </div>
+<div class="container">
+  <div class="row">
+    <!-- displaying  Username-->
+    <div class="col-md-10">
+      <h3> Hello {{user.username| capitalize}} these are the available pitches </h3>
 
-                <div class="box">
-							
-                    <div class="inner">
-                        {% if user.bio %}
-                        <p> {{user.bio}}</p>
-                      {%else%}
-                        <p> {{user.username| capitalize}} has no bio </p>
-                      {% endif %}
-                      {% if user == current_user %}
-                       <a href="{{url_for('main.update_profile',uname=user.username)}}">Edit profile</a>
-                     {% endif %}
-                    </div>
-                    </div>
-                  
+      <!--Displaying user piches-->
+      {% for pitch in index %}
+      <div class="card">
+        <h3>Category: {{pitch.category}}</h3>
+        <h3>{{pitch.body}}</H3>
+        <p>By:{{pitch.post}}</p>
+        <p>Posted at {{pitch.date_posted}}</p>
+        <p><a href="/feedback">leave feedback</a></p>
+      </div>
+      {% endfor %}
+    </div>
 
-  
-  <!------Update profile information---->
- 
+    <!--Display profile photo-->
+    <div class="col-md-2">
 
+      {% if user.profile_pic_path %}
+      <img src="{{url_for('static',filename=user.profile_pic_path)}}" alt="" class="img-thumbnail">
+      {%else%}
+      <p>No profile picture</p>
+      {% endif %}
+    </div>
+  </div>
 </div>
-</div>
+
+<style>
+  .card {
+    padding: 10px;
+    padding-top: 0;
+    border: 1px solid black;
+    box-shadow: -1px 1px 16px -1px rgba(0, 0, 0, 0.75);
+    margin: 10px;
+    overflow: hidden;
+    transition: transform 1s;
+  }
+</style>
 {% endblock %}

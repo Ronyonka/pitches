@@ -1,35 +1,61 @@
-
 {% extends 'base.html'%}
-{% block content%}
-			<h1>One Minute Pitch</h1>
-			<p>The only place where it is okay to be a one minute man</p>
-		</header>
-		<hr>
-		{% if current_user.is_authenticated %}
-		<div class="box">
-				
-				<div class="inner">
-						<a href="{{url_for('main.profile',uname=current_user.username)}}"class="button fit">Profile</a>
-				</div>
-			</div>
-			<div class="box">
-				
-					<div class="inner">
-						<a href="{{url_for('auth.logout')}}"  class="button style2 fit">Sign out</a>
-					</div>
-				</div>
-		{% else %}
-		<div class="box">
-				
-				<div class="inner">
-						<a href="{{url_for('auth.login')}}" class="button style2 fit">Sign in</a>
-				</div>
-			</div>
 
-		{%endif%}
-		<a href="#main" href="{{url_for('static',filename='photos/arrow.svg')}}"class="more">View </a>
-		<p>fghjkjhhjk</p>
+{% block content %}
 
-	</div>
-</section>           
-{% endblock %}
+{% block styles%}
+{{ super() }}
+<link rel="stylesheet" href="{{url_for('static',filename='css/styles.css')}}">
+<link href="https://fonts.googleapis.com/css?family=Amatic+SC" rel="stylesheet">
+{% endblock%}
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-1">
+
+      </div>
+      <div class="col-md-10">
+        <div class="home">
+          <h1><strong>PITCHER</strong></h1>
+          <h2><strong>Home of all your ideas</strong></h2>
+          <h6><strong>Get Pitch ideas or write your own. Be the insiration you are!</strong></h6>
+          <a class="btn btn-success btn-lg text-center"  > Profile</a>
+        </div>
+        <div class="row">
+          <div class="imgs">
+            <br>
+            <br>
+            <br>
+            <img src="https://image.shutterstock.com/image-vector/vinnitsa-ukraine-april-03-2018-260nw-1184346502.jpg" alt="fb" height="50px"width="50px">
+            <img src="https://cdn.pixabay.com/photo/2016/08/09/17/52/instagram-1581266__340.jpg" alt="twiter" height="50px"width="50px">
+            <img src="https://www.glassmanwealth.com/wp-content/uploads/2015/10/alltwitter-twitter-bird-logo-white-on-blue.png" alt="insta" height="50px"width="50px">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-1">
+
+      </div>
+    </div>
+  </div>
+</body>
+
+<style>
+.home{
+    font-family: 'Amatic SC', cursive;
+    font:20px;
+    font-size: 30px;
+    color: black;
+    text-align:justify;
+    margin-left:30%;
+    margin-top:10%;
+}
+body{
+  background:#D9DBF1;
+}
+img{
+  border-radius:50%;
+  margin-left:20%;
+  margin-bottom:10%;
+}
+</style>
+{%endblock%}
