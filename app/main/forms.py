@@ -1,21 +1,25 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField,TextAreaField,SubmitField,ValidationError,SelectField
-from wtforms.validators import Required,Email
-from app.models import User
+from wtforms import StringField,TextAreaField,SubmitField,SelectField
+from wtforms.validators import Required
 
-class PostForm(FlaskForm):
+class FeedbackForm(FlaskForm):
 
-    title = StringField('Pitch title',validators=[Required()])
-    post = TextAreaField('Pitch', validators=[Required()])
-    submit = SubmitField('Publish')
-    category = SelectField("category",choices=[("pick-up", "pick-up"),("boring","boring"),("funny","funny"),("promotion","promotion"),("product","product"),("cheesy","cheesy"),("random","random")],validators = [Required()])
-   
+    title = StringField('Feedback title',validators=[Required()])
 
-class UpdateProfile(FlaskForm):
-    bio = TextAreaField('Tell us about you.',validators = [Required()])
+    feedback = TextAreaField('Pitch feedback', validators=[Required()])
+
     submit = SubmitField('Submit')
 
-class CommentForm(FlaskForm):
-   
-    comment = TextAreaField('comment', validators=[Required()])
-    submit = SubmitField('Submit')
+
+class PitchForm(FlaskForm):
+    post = StringField('Your name',validators=[Required()])
+    body = TextAreaField('Pitch')
+    category = SelectField('Pick Category',
+
+    choices=[('INTERVIEW', 'INTERVIEW'),
+    ('PRODUCT', 'PRODUCT'),
+    ('PROMOTION', 'PROMOTION'),
+    ('PICK-UP', 'PICK-UP'),
+    ('COMEDY', 'COMEDY')],
+    validators=[Required()])
+    submit = SubmitField('Pitch')

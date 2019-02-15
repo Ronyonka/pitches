@@ -1,122 +1,86 @@
-from flask import render_template, request, redirect, url_for, abort
+from flask import render_template,request,redirect,url_for,abort
 from . import main
-from ..models import User, Post,Comment
-from .forms import PostForm,CommentForm,UpdateProfile
-from .. import db,photos
-from flask_login import login_user, logout_user, login_required, current_user
-import datetime
+from flask_login import login_required
+from ..models import User,Feedback,Pitch
+from .forms import FeedbackForm,PitchForm
+from .. import db
 
-
+# landing
 @main.route('/')
 def index():
-    """View root page function that returns index page and the various news sources"""
+    '''
+    View root page function that returns index page and its data
+    '''
+    title = 'Pitcher'
 
-    title = 'Home- Welcome to Pitches'
-    return render_template('index.html',title=title)
+    return render_template('index.html', title = title)
 
+# post pitch
+@main.route('/new_pitch', methods = ['GET','POST'])
+@login_required
+def new_pitch():
+    form = PitchForm()
+    if form.validate_on_submit():
+        pitch = Pitch(post=form.post.data,body=form.body.data,category=form.category.data)
+        pitch.save_pitch()
+        return redirect(url_for('main.index'))
+    return render_template('new_pitch.html',form=form)
+
+# profile
 @main.route('/user/<uname>')
 def profile(uname):
     user = User.query.filter_by(username = uname).first()
-
+    index=Pitch.query.all()
     if user is None:
         abort(404)
 
-    return render_template("profile/profile.html", user = user)
+    return render_template("profile/profile.html", user = user,index = index)
 
-
-
-@main.route('/user/<uname>/update',methods = ['GET','POST'])
+# feedback
+@main.route('/feedback', methods = ['GET','POST'])
 @login_required
-def update_profile(uname):
-    user = User.query.filter_by(username = uname).first()
-    if user is None:
-        abort(404)
-
-    form = UpdateProfile()
-
-    if form.validate_on_submit():
-        user.bio = form.bio.data
-
-        db.session.add(user)
-        db.session.commit()
-
-        return redirect(url_for('.profile',uname=user.username))
-
-    return render_template('profile/update.html')
-
-@main.route('/user/<uname>/update/pic',methods= ['POST'])
-@login_required
-def update_pic(uname):
-    user = User.query.filter_by(username = uname).first()
-    if 'photo' in request.files:
-        filename = photos.save(request.files['photo'])
-        path = f'photos/{filename}'
-        user.profile_pic_path = path
-        db.session.commit()
-    return redirect(url_for('main.profile',uname=uname))
-
-
-@main.route('/post')
-def post(id):
-    pform = PostForm
-
-    posts = Post.query.get(id)
-    if form.validate_on_submit():
-        post = Post(title=pform.title.data,post=pform.post.data,post=post)
+def new_feedback(id):
+    form = FeedbackForm()
+    pitch = Pitch.query.get(id)
+    if fom.validate_on_submit():
+        feedback = Feedback(title=form.title.data,feedback=form.feedback.data, pitch=pitch)
         db.session.add(feedback)
         db.session.commit()
-    post_post = Post.query.filter_by(post=post).all()
+    feed_back = Feedback.query.filter_by(pitch=pitch).all()
+    return render_template('feedback.html',feed_back=feed_back,form=form)
 
-    return render_template('post.html',post_post=post_post, pform=pform)
 
-@main.route('/new/post/<uname>', methods = ['GET','POST'])
+# product
+@main.route('/product', methods = ['GET','POST'])
 @login_required
-def new_post(uname):
-    pform = PostForm()
-    title = 'Express yourself'
-    user = User.query.filter_by(username = uname).first()
+def product():
+    product_pitch=Pitch.query.filter_by(category="PRODUCT")
+    return render_template('product.html', product_pitch = product_pitch)
 
-    if user is None:
-        abort(404)
-      
-    if pform.validate_on_submit():
-        title = pform.title.data
-        post = pform.post.data
-        category = pform.category.data 
-        dateNow = datetime.datetime.now()
-        date = str(dateNow)
-    
-
-        add_post = Post(title = title,post=post,category=category,date=date)
-        add_post.save_post()
-        posts = Post.query.all()
-        return redirect(url_for('main.post',category = category ))
-    return render_template('new_post.html', post_form = pform,posts=posts, user_id = user_id)
-
- 
-
-@main.route('/post/<post_id>/add/comment', methods = ['GET','POST'])
+# pick_Up
+@main.route('/pick_up', methods = ['GET','POST'])
 @login_required
-def comment(uname,post_id):
-    user = User.query.filter_by(username = uname).first()
-    post = Post.query.filter_by(id = post_id).first()
-    form = CommentForm()
+def pick():
+    pick_Up=Pitch.query.filter_by(category="PICK-UP")
+    return render_template('pick_up.html', pick_Up = pick_Up)
 
-    if form.validate_on_submit():
-        body = form.comment.data
-        name = form.name.data
-        new_comment = Comment(body=body)
-        new_comment.save_comment()
-        
-        return redirect(url_for("main.show_comments",id = id))
-    return render_template("comment.html", form = form, post = post, user=user,name=name)
-
-@main.route('/<post_id>/comments')
+# stand up comedy
+@main.route('/stand_up_comedy', methods = ['GET','POST'])
 @login_required
-def show_comments(post_id):
-    
-    comments = None
-    post = Post.query.filter_by(id = post_id).first()
-    comments = post.get_post_comments()
+def stand():
+    stand_Up=Pitch.query.filter_by(category="COMEDY")
+    return render_template('stand_up_comedy.html', stand_Up = stand_Up)
 
-    return render_template('show_comments.html',comments= comments,post= post)
+# PROMOTION
+@main.route('/promotion', methods = ['GET','POST'])
+@login_required
+def promotion():
+    promotion_pitch=Pitch.query.filter_by(category="PROMOTION")
+    return render_template('promotion.html', promotion_pitch = promotion_pitch)
+
+# INTERVIEW
+@main.route('/interview', methods = ['GET','POST'])
+@login_required
+def interview():
+    interview_pitch=Pitch.query.filter_by(category="INTERVIEW")
+    return render_template('interview.html', interview_pitch = interview_pitch)
