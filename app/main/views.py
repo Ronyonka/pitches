@@ -11,7 +11,7 @@ def index():
     '''
     View root page function that returns index page and its data
     '''
-    title = 'Pitcher'
+    title = 'Pitch'
 
     return render_template('index.html', title = title)
 
@@ -65,11 +65,11 @@ def pick():
     return render_template('pick_up.html', pick_Up = pick_Up)
 
 # stand up comedy
-@main.route('/stand_up_comedy', methods = ['GET','POST'])
+@main.route('/comedy', methods = ['GET','POST'])
 @login_required
 def stand():
     stand_Up=Pitch.query.filter_by(category="COMEDY")
-    return render_template('stand_up_comedy.html', stand_Up = stand_Up)
+    return render_template('comedy.html', stand_Up = stand_Up)
 
 # PROMOTION
 @main.route('/promotion', methods = ['GET','POST'])

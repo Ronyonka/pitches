@@ -1,5 +1,5 @@
 
-<div class="navbar navbar-inverse" style="background-color: #0B3948;" role="navigation">
+<div class="navbar navbar-inverse" style="background-color: #2C2B3C;" role="navigation">
 	<div class="container-fluid">
 	  <br>
 	  <div class="navbar-header">
@@ -9,9 +9,9 @@
 		  <span class="icon-bar"></span>
 		  <span class="icon-bar"></span>
 		</button>
-		<a class="navbar-brand" href="/"> PITCHER</a>
+		<a class="navbar-brand" href="/"> Pitch</a>
 	  </div>
-	  <ul class="nav navbar-nav navbar-right" style="background-color: #0B3948;">
+	  <ul class="nav navbar-nav navbar-right" style="background-color: #2C2B3C;">
 		{% if current_user.is_authenticated %}
 		<li><a href="{{url_for('main.profile',uname=current_user.username)}}">Profile</a></li>
 		<li><a href="{{url_for('auth.logout')}}">Sign out</a></li>
@@ -19,14 +19,14 @@
 		<li><a href="{{url_for('auth.login')}}">Sign in</a></li>
 		{%endif%}
 	  </ul>
-	  <div class="navbar-collapse collapse" style="background-color: #0B3948;">
+	  <div class="navbar-collapse collapse" style="background-color: #2C2B3C;">
 		<ul class="nav navbar-nav navbar-right">
 		  <li><a href="/">HOME</a></li>
 		  <li><a href="/interview">INTERVIEW PITCH</a></li>
 		  <li><a href="/product">PRODUCT PITCH</a></li>
 		  <li><a href="/promotion">PROMOTION PITCH</a></li>
 		  <li><a href="/pick_up">PICK UP LINES</a></li>
-		  <li><a href="/stand_up_comedy">STAND UP COMEDIES</a></li>
+		  <li><a href="/comedy">FUNNY LINES</a></li>
   
 	  </div>
 	  <br>
