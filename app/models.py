@@ -9,82 +9,74 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class User(UserMixin,db.Model):
+
     __tablename__ = 'users'
-
-    id = db.Column(db.Integer,primary_key = True)
-    username = db.Column(db.String(255),index = True)
-    email = db.Column(db.String(255),unique = True,index = True)
+    id = db.Column(db.Integer,primary_key =True)
+    username = db.Column(db.String(255))
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
-    bio = db.Column(db.String(255))
-    profile_pic_path = db.Column(db.String())
+    email = db.Column(db.String(255),unique = True,index = True)
     password_hash = db.Column(db.String(255))
-
-    posts = db.relationship('Post',backref = 'user',lazy="dynamic")
+    pass_secure = db.Column(db.String(255))
+    pitchs = db.relationship('Pitch',backref = 'pitchs',lazy = "dynamic")
+    feedbacks = db.relationship('Feedback',backref='feedbacks',lazy="dynamic")
 
     @property
     def password(self):
-        raise AttributeError('You cannnot read the password attribute')
+
+        raise AttributeError('You cannot read the password attributes')
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
 
+        self.pass_secure = generate_password_hash(password)
 
-    def verify_password(self,password) :
-        return check_password_hash(self.password_hash,password)
+    def verify_password(self,password):
+
+        return check_password_hash(self.pass_secure,password)
+
 
     def __repr__(self):
         return f'User {self.username}'
 
-
 class Role(db.Model):
+
     __tablename__ = 'roles'
-
-    id = db.Column(db.Integer,primary_key = True)
+    id = db.Column(db.Integer,primary_key =True)
     name = db.Column(db.String(255))
-    users = db.relationship('User',backref = 'role',lazy="dynamic")
-
+    user_id = db.relationship('User',backref = 'role',lazy="dynamic")
 
     def __repr__(self):
         return f'User {self.name}'
 
-class Post(db.Model):
 
-    __tablename__ = 'posts'
+class Pitch(UserMixin,db.Model):
+
+    __tablename__ = 'pitchs'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text)
-    body = db.Column(db.Text)
-    date = db.Column(db.String)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    category = db.Column(db.String)
-    comments = db.relationship("Comment", backref = "post", lazy = "dynamic")
+    post = db.Column(db.String(255))
+    body = db.Column(db.String(1000))
+    category = db.Column(db.String(1000))
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    feedbacks = db.relationship('Feedback',backref = 'pitch',lazy = "dynamic")
 
-    def save_post(self):
-        '''
-        Function to save a new pitch
-        '''
+    def save_pitch(self):
         db.session.add(self)
         db.session.commit()
 
-    def get_post_comments(self):
-        post = Post.query.filter_by(id = self.id).first()
-        comments = Comment.query.filter_by(id = post.id)
-        return comments
+class Feedback(UserMixin,db.Model):
 
-class Comment(db.Model):
-     
-    __tablename__ = 'comments'
+    __tablename__ = 'feedbacks'
 
-    id = db.Column(db.Integer, primary_key = True)
-    body = db.column(db.Text)
-    author = db.column(db.Text)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    pitch_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    feedback = db.Column(db.String(1000))
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    pitch_id = db.Column(db.Integer, db.ForeignKey("pitchs.id"))
+    user_id = db.Column(db.Integer,db.ForeignKey('users.id'))
 
 
-    def save_comment(self):
+    def save_feedback(self):
         db.session.add(self)
-        db.session.commit()   
-        
-    
+        db.session.commit()
