@@ -8,10 +8,7 @@ class PostForm(FlaskForm):
     title = StringField('Pitch title',validators=[Required()])
     post = TextAreaField('Pitch', validators=[Required()])
     submit = SubmitField('Publish')
-    category = SelectField(
-        "category",
-        choices=[("pick-up", "pick-up"),("boring","boring"),("funny","funny"),("promotion","promotion"),("product","product"),("cheesy","cheesy"),("random","random")],validators = [Required()]
-    )
+    category = SelectField("category",choices=[("pick-up", "pick-up"),("boring","boring"),("funny","funny"),("promotion","promotion"),("product","product"),("cheesy","cheesy"),("random","random")],validators = [Required()])
    
 
 class UpdateProfile(FlaskForm):

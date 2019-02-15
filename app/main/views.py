@@ -12,8 +12,7 @@ def index():
     """View root page function that returns index page and the various news sources"""
 
     title = 'Home- Welcome to Pitches'
-    form = PostForm()
-    return render_template('index.html', form=form)
+    return render_template('index.html',title=title)
 
 @main.route('/user/<uname>')
 def profile(uname):
@@ -57,40 +56,42 @@ def update_pic(uname):
     return redirect(url_for('main.profile',uname=uname))
 
 
-@main.route('/post/<category>')
-def post(category):
-    
-    posts= None
-    if category == 'all':
-        posts = Post.query.order_by(Post.date.desc())
-    else :
-        posts = Post.query.filter_by(category = category).order_by(Post.date.desc()).all()
+@main.route('/post')
+def post(id):
+    pform = PostForm
 
-    return render_template('post.html', posts = posts ,title = category.upper())
+    posts = Post.query.get(id)
+    if form.validate_on_submit():
+        post = Post(title=pform.title.data,post=pform.post.data,post=post)
+        db.session.add(feedback)
+        db.session.commit()
+    post_post = Post.query.filter_by(post=post).all()
+
+    return render_template('post.html',post_post=post_post, pform=pform)
 
 @main.route('/new/post/<uname>', methods = ['GET','POST'])
 @login_required
 def new_post(uname):
-    form = PostForm()
+    pform = PostForm()
     title = 'Express yourself'
     user = User.query.filter_by(username = uname).first()
 
     if user is None:
         abort(404)
       
-    if form.validate_on_submit():
-        title = form.title.data
-        body = form.post.data
-        category = form.category.data 
+    if pform.validate_on_submit():
+        title = pform.title.data
+        post = pform.post.data
+        category = pform.category.data 
         dateNow = datetime.datetime.now()
         date = str(dateNow)
     
 
-        add_post = Post(title = title,body=body,category=category,date=date)
+        add_post = Post(title = title,post=post,category=category,date=date)
         add_post.save_post()
         posts = Post.query.all()
         return redirect(url_for('main.post',category = category ))
-    return render_template('new_post.html', form = form, title =title)
+    return render_template('new_post.html', post_form = pform,posts=posts, user_id = user_id)
 
  
 
@@ -108,7 +109,7 @@ def comment(uname,post_id):
         new_comment.save_comment()
         
         return redirect(url_for("main.show_comments",id = id))
-    return render_template("comment.html", form = form, post = post)
+    return render_template("comment.html", form = form, post = post, user=user,name=name)
 
 @main.route('/<post_id>/comments')
 @login_required

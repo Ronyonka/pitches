@@ -19,6 +19,8 @@ class User(UserMixin,db.Model):
     profile_pic_path = db.Column(db.String())
     password_hash = db.Column(db.String(255))
 
+    posts = db.relationship('Post',backref = 'user',lazy="dynamic")
+
     @property
     def password(self):
         raise AttributeError('You cannnot read the password attribute')
