@@ -7,6 +7,7 @@
 ## Description
 
  This is a web application that users can view one minute pitches posted, contribute their posts and comment on other users pitches.
+ Try it out  <https://ronpitch.herokuapp.com>
 
 
 ## Working of the web application.
@@ -15,11 +16,11 @@ The projects runs on a browser.You can use a smartphone,desktop or tablet or any
 
 ## Live Demo
 
-Please find here a link to the live demo:  
+Please find here a link to the live demo: <https://ronpitch.herokuapp.com>
 
 ## Setup/Installation Requirements
 
-* Install i-pitch by cloning this repository :<https://github.com/Ronyonka/pitch>
+* Install i-pitch by cloning this repository :<https://github.com/Ronyonka/pitches>
 * Install the prerequisites in a virtual environment or globally
 * Install them via pip using : pip install -r requirements.txt
 * Run ./start.sh in the terminal to launch the application
@@ -28,8 +29,8 @@ Please find here a link to the live demo:
 
 | Behaviour                          | Input          | Output      |
 | ---------------------------------- | -------------- | ----------- |
-| User clicks on register on the landing page | User fills the registration account and fills it in | User creates an account and is able to view posts on home page and add posts.|
-| User clicks on login on landing page | User enters login information | If correct info is entered, user can view pitches on the home page and can add posts or comment on posts |
+| User clicks on signup on the landing page | User fills the registration account and fills it in | User creates an account and is able to view posts on home page and add posts.|
+| User clicks on login on landing page | User enters login information | If correct info is entered, user can view pitches on the different categories and even add their own|
 | Add Posts | User entered the title and content of post | User creats post| 
 
 
